@@ -54,6 +54,13 @@ app.delete("/repositories/:id", (request, response) => {
 
   repositories.splice(repositoryIndex,1);
 
+  const likesIndex = likes.findIndex(like => like.id === id);
+  if (likesIndex < 0) {
+      return response.status(204).send();
+  }
+
+  likes.splice(likesIndex, 1);
+
   return response.status(204).send();
 
 });
