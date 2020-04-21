@@ -11,15 +11,22 @@ const repositories = [];
 const likes = [];
 
 app.get("/repositories", (request, response) => {
-  return response.json(repositories);
+  const array = mergeArraysById(repositories, likes);
+  return response.json(array);
 });
 
 app.post("/repositories", (request, response) => {
   const { title, url, techs } = request.body;
   const repository = { id: uuid(), title, techs, url };
-    repositories.push(repository);
+  const liked = {
+      id: repository.id,
+      like: 0,
+  };
+  likes.push(liked);
 
-  return response.json(repository);
+  repositories.push(repository);
+
+  return response.json({ id: repository.id, tile: repository.title, techs: repository.techs, url: repository.url, likes: liked.like });
 });
 
 app.put("/repositories/:id", (request, response) => {
@@ -38,7 +45,7 @@ app.put("/repositories/:id", (request, response) => {
       url,
   };
 
-    repositories[repositoryIndex] = repository;
+  repositories[repositoryIndex] = repository;
 
   return response.json(repository);
 
@@ -74,14 +81,7 @@ app.post("/repositories/:id/like", (request, response) => {
 
     const likeIndex = likes.findIndex(liked => liked.id === id);
     if (likeIndex < 0) {
-        const liked = {
-            id,
-            like: 1,
-        };
-        likes.push(liked);
-
-
-        return response.json(liked);
+        return response.status(400).json({ error: "Repository not found"});
     } else {
         const liked = {
             id,
@@ -94,4 +94,20 @@ app.post("/repositories/:id/like", (request, response) => {
     }
 });
 
+function mergeArraysById(array1, array2) {
+    let start = 0;
+    let merged = [];
+
+    while (start < array1.length) {
+        if (array1[start].id === array2[start].id) {
+            merged.push({...array1[start], ...array2[start]});
+        }
+        start = start+1
+    }
+    return merged;
+}
+
 module.exports = app;
+
+
+
